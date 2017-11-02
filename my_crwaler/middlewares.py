@@ -62,7 +62,6 @@ from selenium import webdriver
 class MeijuMiddleware(object):
     def process_request(self, request, spider):
         if spider.name == "ttmeiju":
-            print('请求')
             spider.browser.get(request.url)
             return HtmlResponse(url=spider.browser.current_url, body=spider.browser.page_source, encoding='utf-8',
                                 request=request)

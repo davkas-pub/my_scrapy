@@ -42,9 +42,10 @@ class TtmeijuItemPipeline(object):
         return cls(dbpool)
 
     def process_item(self, item, spider):
-        x = item
-        query = self.dbpool.runInteraction(self.do_insert, item)
-        query.addErrback(self.handle_error)  # 处理异步异常
+        # x = item
+        # query = self.dbpool.runInteraction(self.do_insert, item)
+        # query.addErrback(self.handle_error)  # 处理异步异常
+        pass
 
     # 处理异步异常
     def handle_error(self, failure):

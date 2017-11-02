@@ -68,7 +68,7 @@ DOWNLOADER_MIDDLEWARES = {
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    #'my_crwaler.pipelines.MyCrwalerPipeline': 300,
-    'my_crwaler.pipelines.TtmeijuItemPipeline': 300,
+    #'my_crwaler.pipelines.TtmeijuItemPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
