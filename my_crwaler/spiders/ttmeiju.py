@@ -5,6 +5,7 @@ import re
 from scrapy.loader import ItemLoader
 from my_crwaler.items import TtmeijuItem
 import my_crwaler.utils.common as utils
+from selenium import webdriver
 
 
 class TtmeijuSpider(scrapy.Spider):
@@ -20,23 +21,40 @@ class TtmeijuSpider(scrapy.Spider):
         "Host": "www.ttmeiju.vip"
     }
 
+    def __init__(self):
+        super(TtmeijuSpider, self).__init__()
+        chrome_options = webdriver.ChromeOptions()
+        prefs = {"profile.managed_default_content_settings.images": 2}
+        path = 'D:/selenium/chromedriver.exe'
+        chrome_options.add_experimental_option("prefs", prefs)
+        self.browser = webdriver.Chrome(executable_path=path, chrome_options=chrome_options)
+
+
     def start_requests(self):
-        yield scrapy.Request(url=self.start_urls[0], headers=self.headers, callback=self.is_login)
+        #yield scrapy.Request(url=self.start_urls[0], headers=self.headers, callback=self.is_login)
+        yield scrapy.Request(url=self.start_urls[0], callback=self.is_login)
 
     def is_login(self, response):
         login_flag = response.css('#loginform')
+        login_form = self.browser.find_element_by_xpath("//input[@class='input_tx' and @name='username']")
+        pwd_form = self.browser.find_element_by_xpath("//input[@class='input_tx' and @name='password']")
+        button = self.browser.find_element_by_xpath("//input[@class='input_search']")
         if login_flag is not None:
             # 登录
-            params = {
-                'username': self.login_user,
-                'password': self.login_pwd
-            }
-            return [scrapy.FormRequest(
-                url=self.start_urls[0],
-                formdata=params,
-                headers=self.headers,
-                callback=self.check_login
-            )]
+            # params = {
+            #     'username': self.login_user,
+            #     'password': self.login_pwd
+            # }
+            # return [scrapy.FormRequest(
+            #     url=self.start_urls[0],
+            #     formdata=params,
+            #     #headers=self.headers,
+            #     callback=self.check_login
+            # )]
+            login_form.send_keys(self.login_user)
+            pwd_form.send_keys(self.login_pwd)
+            button.click()
+            self.check_login(self)
 
     def check_login(self, response):
         # 成功之后请求列表页
@@ -74,10 +92,11 @@ class TtmeijuSpider(scrapy.Spider):
             # 获取中文标题
             chinese_title = title_list[0]
             eposode_info = ""
+            eposode_position = "S00E00"
             for info in title_list:
                 if re.match("S\d+E\d+", info):
                     eposode_info = info
-            eposode_position = title_list.index(eposode_info)
+                    eposode_position = title_list.index(eposode_info)
             # 获取集的信息
             english_split = title_list[1:eposode_position]
             # 由于英文有空格 切片链接

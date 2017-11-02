@@ -54,3 +54,24 @@ class MyCrwalerSpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+from scrapy.http import HtmlResponse
+from selenium import webdriver
+
+class MeijuMiddleware(object):
+    def process_request(self, request, spider):
+        if spider.name == "ttmeiju":
+            print('请求')
+            spider.browser.get(request.url)
+            return HtmlResponse(url=spider.browser.current_url, body=spider.browser.page_source, encoding='utf-8',
+                                request=request)
+
+# class MeijuMiddleware(object):
+#     def process_request(self, request, spider):
+#         if spider.name == "ttmeiju":
+#             browser = webdriver.Chrome()
+#             print('请求')
+#             browser.get(request.url)
+#             return HtmlResponse(url=browser.current_url, body=browser.page_source, encoding='utf-8',
+#                                 request=request)

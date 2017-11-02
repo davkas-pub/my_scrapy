@@ -46,15 +46,17 @@ ROBOTSTXT_OBEY = False
 
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'my_crwaler.middlewares.MyCrwalerSpiderMiddleware': 543,
-#}
+# SPIDER_MIDDLEWARES = {
+#    #'my_crwaler.middlewares.MyCrwalerSpiderMiddleware': 543,
+#     'my_crwaler.middlewares.MeijuMiddleware': 543
+# }
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'my_crwaler.middlewares.MyCustomDownloaderMiddleware': 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+   #'my_crwaler.middlewares.MyCustomDownloaderMiddleware': 543,
+    'my_crwaler.middlewares.MeijuMiddleware': 543
+}
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html

@@ -54,28 +54,9 @@ class TtmeijuItemPipeline(object):
         # 执行逻辑
         # x = item
         insert_sql = """replace into ttmeiju(baiduurl, xunleiurl, xiaomiurl, ed2url, bturl, kind, size, season,chinesetitle,
-          id_object)  VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s') """
+          id_object,release_time,episode)  VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s') """
         cursor.execute(
             insert_sql % (item['baiduUrl'][0], item['xunleiUrl'][0], item['xiaomiUrl'][0], item['ed2Url'][0],
-                          item['btUrl'][0], item['kind'][0], item['size'][0], item['season'][0], item['chinese_title'][0],item['object_id'][0]))
-
-
-        # insert_sql = """insert into ttmeiju(baiduurl, id_object) VALUES ('%s','%s')"""
-        # cursor.execute(
-        #     insert_sql % (item['baiduUrl'][0], item['object_id'][0])
-        #)
-        # print((item['vote_up_nums'], item['url'], item['create_date'], item['title']))
-
-        """
-            xiaomiUrl = scrapy.Field()
-    ed2Url = scrapy.Field()
-    btUrl = scrapy.Field()
-    kind = scrapy.Field()
-    size = scrapy.Field()
-    release_time = scrapy.Field()
-    subtitle = scrapy.Field()
-    chinese_title = scrapy.Field()
-    english_title = scrapy.Field()
-    season = scrapy.Field()
-    episode = scrapy.Field()
-        """
+                          item['btUrl'][0], item['kind'][0], item['size'][0], item['season'][0],
+                          item['chinese_title'][0], item['object_id'][0], item['release_time'][0],
+                          item['episode'][0]))
