@@ -23,17 +23,24 @@ class TtmeijuSpider(scrapy.Spider):
         "Host": "www.ttmeiju.vip"
     }
 
+    chrome_options = webdriver.ChromeOptions()
+    prefs = {"profile.managed_default_content_settings.images": 2}
+    # path = '/Users/canvas/project/seleniumdivers/chromedriver'
+    path = "E:/selenium_driver/chromedriver.exe"
+    chrome_options.add_experimental_option("prefs", prefs)
+    browser = webdriver.Chrome(executable_path=path, chrome_options=chrome_options)
+
     def __init__(self):
         super(TtmeijuSpider, self).__init__()
-        chrome_options = webdriver.ChromeOptions()
-        prefs = {"profile.managed_default_content_settings.images": 2}
-        path = '/Users/canvas/project/seleniumdivers/chromedriver'
-        chrome_options.add_experimental_option("prefs", prefs)
-        self.browser = webdriver.Chrome(executable_path=path, chrome_options=chrome_options)
-
+        # chrome_options = webdriver.ChromeOptions()
+        # prefs = {"profile.managed_default_content_settings.images": 2}
+        # #path = '/Users/canvas/project/seleniumdivers/chromedriver'
+        # path = "E:/selenium_driver/chromedriver.exe"
+        # chrome_options.add_experimental_option("prefs", prefs)
+        # self.browser = webdriver.Chrome(executable_path=path, chrome_options=chrome_options)
 
     def start_requests(self):
-        #yield scrapy.Request(url=self.start_urls[0], callback=self.is_login)
+        # yield scrapy.Request(url=self.start_urls[0], callback=self.is_login)
         yield scrapy.Request(url=self.start_urls[0], callback=self.is_login)
 
     def is_login(self, response):
@@ -57,6 +64,7 @@ class TtmeijuSpider(scrapy.Spider):
             pwd_form.send_keys(self.login_pwd)
             button.click()
             url = 'http://www.ttmeiju.vip/summary.html'
+            self.browser.close()
             yield scrapy.Request(url=url, dont_filter=True)
 
     # def check_login(self, response):
@@ -68,19 +76,25 @@ class TtmeijuSpider(scrapy.Spider):
         # 解析分页 .pagination .num
         detail_urls = response.css('.latesttable a::attr(href)').extract()
         detail_pattern = "^/meiju/[^(Movie.html)]"
+        i = 0
         for detail_url in detail_urls:
             if re.match(detail_pattern, detail_url, flags=0):
                 real_detail_url = parse.urljoin(response.url, detail_url)
-                print("----" + real_detail_url + "----")
-                yield scrapy.Request(real_detail_url, dont_filter=True, callback=self.detail_parse)
+                i += 1
+                print("--------------" + real_detail_url)
+                if i > 2:
+                    yield scrapy.Request(url=real_detail_url, dont_filter=True, callback=self.detail_parse,
+                                         meta={'browser': self.browser})
 
-        page_urls = response.css('.pagination .num::attr(href)').extract()
-        for page_url in page_urls:
-            real_url = parse.urljoin(response.url, page_url)
-            yield scrapy.Request(real_url)
+                    # page_urls = response.css('.pagination .num::attr(href)').extract()
+                    # for page_url in page_urls:
+                    #     real_url = parse.urljoin(response.url, page_url)
+                    #     yield scrapy.Request(real_url)
 
     def detail_parse(self, response):
         print('--detal_parse----')
+        brower = response.meta.get('browser')
+        brower.close()
         # 详细链接列表
         seed_lists = response.css('#seedlist tr')
         for seed_list in seed_lists:
@@ -157,15 +171,14 @@ class TtmeijuSpider(scrapy.Spider):
             item_loader.add_value("episode", episode)
             item_loader.add_value("object_id", object_id)
 
-            #每季翻页
+            # 每季翻页
             elems = self.browser.find_element_by_css_selector(".seasonitem").find_elements_by_xpath('//h3')
-
 
             for elem in elems:
                 if elem.get_attribute('onclick'):
-                    #elem = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS, "seasonitem")))
+                    # elem = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS, "seasonitem")))
                     elem.click()
                     print('clicked')
-                    #self.browser.page_source()
+                    # self.browser.page_source()
 
             yield item_loader.load_item()

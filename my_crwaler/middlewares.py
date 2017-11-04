@@ -59,18 +59,26 @@ class MyCrwalerSpiderMiddleware(object):
 from scrapy.http import HtmlResponse
 from selenium import webdriver
 
-class MeijuMiddleware(object):
-    def process_request(self, request, spider):
-        if spider.name == "ttmeiju":
-            spider.browser.get(request.url)
-            return HtmlResponse(url=spider.browser.current_url, body=spider.browser.page_source, encoding='utf-8',
-                                request=request)
 
 # class MeijuMiddleware(object):
 #     def process_request(self, request, spider):
 #         if spider.name == "ttmeiju":
-#             browser = webdriver.Chrome()
-#             print('请求')
-#             browser.get(request.url)
-#             return HtmlResponse(url=browser.current_url, body=browser.page_source, encoding='utf-8',
+#
+#             spider.browser.get(request.url)
+#             return HtmlResponse(url=spider.browser.current_url, body=spider.browser.page_source, encoding='utf-8',
 #                                 request=request)
+
+class MeijuMiddleware(object):
+    def process_request(self, request, spider):
+        if spider.name == "ttmeiju":
+            # chrome_options = webdriver.ChromeOptions()
+            # prefs = {"profile.managed_default_content_settings.images": 2}
+            # # path = '/Users/canvas/project/seleniumdivers/chromedriver'
+            # path = "E:/selenium_driver/chromedriver.exe"
+            # chrome_options.add_experimental_option("prefs", prefs)
+            # browser = webdriver.Chrome(executable_path=path, chrome_options=chrome_options)
+            print('请求')
+            browser = request.meta['browser']
+            browser.get(request.url)
+            return HtmlResponse(url=browser.current_url, body=browser.page_source, encoding='utf-8',
+                                request=request)
