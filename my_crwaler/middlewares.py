@@ -70,6 +70,7 @@ from selenium import webdriver
 
 class MeijuMiddleware(object):
     def process_request(self, request, spider):
+        request_url = request.url
         if spider.name == "ttmeiju":
             # chrome_options = webdriver.ChromeOptions()
             # prefs = {"profile.managed_default_content_settings.images": 2}
@@ -77,8 +78,32 @@ class MeijuMiddleware(object):
             # path = "E:/selenium_driver/chromedriver.exe"
             # chrome_options.add_experimental_option("prefs", prefs)
             # browser = webdriver.Chrome(executable_path=path, chrome_options=chrome_options)
-            print('请求')
-            browser = request.meta['browser']
-            browser.get(request.url)
-            return HtmlResponse(url=browser.current_url, body=browser.page_source, encoding='utf-8',
-                                request=request)
+            # print('请求')
+            # browser = request.meta['browser']
+            # browser.get(request.url)
+            # return HtmlResponse(url=browser.current_url, body=browser.page_source, encoding='utf-8',
+            #                     request=request)
+
+
+            chrome_options = webdriver.ChromeOptions()
+            prefs = {"profile.managed_default_content_settings.images": 2}
+            # path = '/Users/canvas/project/seleniumdivers/chromedriver'
+            path = "E:/selenium_driver/chromedriver.exe"
+            chrome_options.add_experimental_option("prefs", prefs)
+            browser = webdriver.Chrome(executable_path=path, chrome_options=chrome_options)
+
+            if request_url == "http://www.ttmeiju.vip/index.php/user/login.html":
+                browser.get(request_url)
+                spider.browser = browser
+                return HtmlResponse(url=browser.current_url, body=browser.page_source, encoding='utf-8',
+                                    request=request)
+            else:
+                cookies = spider.web_cookies
+                print(cookies[0])
+
+                browser.add_cookie(cookies[0])
+
+                browser.get(request_url)
+                spider.browser = browser
+                return HtmlResponse(url=browser.current_url, body=browser.page_source, encoding='utf-8',
+                                    request=request)

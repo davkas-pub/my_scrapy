@@ -6,8 +6,10 @@ from scrapy.loader import ItemLoader
 from my_crwaler.items import TtmeijuItem
 import my_crwaler.utils.common as utils
 from selenium import webdriver
+import pickle
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import time
 
 
 class TtmeijuSpider(scrapy.Spider):
@@ -45,9 +47,10 @@ class TtmeijuSpider(scrapy.Spider):
 
     def is_login(self, response):
         login_flag = response.css('#loginform')
-        login_form = self.browser.find_element_by_xpath("//td//input[@class='input_tx' and @name='username']")
-        pwd_form = self.browser.find_element_by_xpath("//td//input[@class='input_tx' and @name='password']")
-        button = self.browser.find_element_by_xpath("//input[@class='input_search']")
+        browser = self.browser
+        login_form = browser.find_element_by_xpath("//td//input[@class='input_tx' and @name='username']")
+        pwd_form = browser.find_element_by_xpath("//td//input[@class='input_tx' and @name='password']")
+        button = browser.find_element_by_xpath("//input[@class='input_search']")
         if login_flag is not None:
             # 登录
             # params = {
@@ -63,6 +66,19 @@ class TtmeijuSpider(scrapy.Spider):
             login_form.send_keys(self.login_user)
             pwd_form.send_keys(self.login_pwd)
             button.click()
+
+            print(browser.current_url)
+            while True:
+                # print(browser.current_url)
+                # print(browser.get_cookies())
+                if browser.current_url == "http://www.ttmeiju.vip/":
+                    self.web_cookies = browser.get_cookies()
+                    break
+                time.sleep(2)
+
+            print(browser.get_cookies())
+            #pickle.dump(browser.get_cookies(), open("cookies.pkl", "wb"))
+            self.web_cookies = browser.get_cookies()
             url = 'http://www.ttmeiju.vip/summary.html'
             self.browser.close()
             yield scrapy.Request(url=url, dont_filter=True)
@@ -74,6 +90,7 @@ class TtmeijuSpider(scrapy.Spider):
 
     def parse(self, response):
         # 解析分页 .pagination .num
+        print(self.browser.get_cookies())
         detail_urls = response.css('.latesttable a::attr(href)').extract()
         detail_pattern = "^/meiju/[^(Movie.html)]"
         i = 0
