@@ -42,10 +42,10 @@ class TtmeijuItemPipeline(object):
         return cls(dbpool)
 
     def process_item(self, item, spider):
-        # x = item
-        # query = self.dbpool.runInteraction(self.do_insert, item)
-        # query.addErrback(self.handle_error)  # 处理异步异常
-        pass
+        x = item
+        query = self.dbpool.runInteraction(self.do_insert, item)
+        query.addErrback(self.handle_error)  # 处理异步异常
+
 
     # 处理异步异常
     def handle_error(self, failure):
@@ -54,10 +54,11 @@ class TtmeijuItemPipeline(object):
     def do_insert(self, cursor, item):
         # 执行逻辑
         # x = item
-        insert_sql = """replace into ttmeiju(baiduurl, xunleiurl, xiaomiurl, ed2url, bturl, kind, size, season,chinesetitle,
-          id_object,release_time,episode)  VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s') """
-        cursor.execute(
-            insert_sql % (item['baiduUrl'][0], item['xunleiUrl'][0], item['xiaomiUrl'][0], item['ed2Url'][0],
-                          item['btUrl'][0], item['kind'][0], item['size'][0], item['season'][0],
-                          item['chinese_title'][0], item['object_id'][0], item['release_time'][0],
-                          item['episode'][0]))
+        for i in range(len(item['baiduUrl'])):
+            insert_sql = """replace into ttmeiju(baiduurl, xunleiurl, xiaomiurl, ed2url, bturl, kind, size, season,chinesetitle,
+              id_object,release_time,episode)  VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s') """
+            cursor.execute(
+                insert_sql % (item['baiduUrl'][i], item['xunleiUrl'][i], item['xiaomiUrl'][i], item['ed2Url'][i],
+                              item['btUrl'][i], item['kind'][i], item['size'][i], item['season'][i],
+                              item['chinese_title'][i], item['object_id'][i], item['release_time'][i],
+                              item['episode'][i]))

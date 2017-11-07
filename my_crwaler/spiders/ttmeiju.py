@@ -10,6 +10,8 @@ import pickle
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+from selenium.webdriver.support.ui import WebDriverWait as wait
+from scrapy.selector import Selector
 
 
 class TtmeijuSpider(scrapy.Spider):
@@ -52,67 +54,62 @@ class TtmeijuSpider(scrapy.Spider):
         pwd_form = browser.find_element_by_xpath("//td//input[@class='input_tx' and @name='password']")
         button = browser.find_element_by_xpath("//input[@class='input_search']")
         if login_flag is not None:
-            # 登录
-            # params = {
-            #     'username': self.login_user,
-            #     'password': self.login_pwd
-            # }
-            # return [scrapy.FormRequest(
-            #     url=self.start_urls[0],
-            #     formdata=params,
-            #     #headers=self.headers,
-            #     callback=self.check_login
-            # )]
             login_form.send_keys(self.login_user)
             pwd_form.send_keys(self.login_pwd)
             button.click()
-
-            print(browser.current_url)
             while True:
-                # print(browser.current_url)
-                # print(browser.get_cookies())
+
                 if browser.current_url == "http://www.ttmeiju.vip/":
                     self.web_cookies = browser.get_cookies()
                     break
                 time.sleep(2)
-
-            print(browser.get_cookies())
-            #pickle.dump(browser.get_cookies(), open("cookies.pkl", "wb"))
             self.web_cookies = browser.get_cookies()
             url = 'http://www.ttmeiju.vip/summary.html'
             self.browser.close()
             yield scrapy.Request(url=url, dont_filter=True)
 
-    # def check_login(self, response):
-    #     # 成功之后请求列表页
-    #     url = 'http://www.ttmeiju.vip/summary.html'
-    #     yield scrapy.Request(url=url, dont_filter=True)
-
     def parse(self, response):
         # 解析分页 .pagination .num
-        print(self.browser.get_cookies())
+        browser = response.meta.get('browser_obj')
+        browser.close()
         detail_urls = response.css('.latesttable a::attr(href)').extract()
         detail_pattern = "^/meiju/[^(Movie.html)]"
         i = 0
         for detail_url in detail_urls:
-            if re.match(detail_pattern, detail_url, flags=0):
-                real_detail_url = parse.urljoin(response.url, detail_url)
-                i += 1
-                print("--------------" + real_detail_url)
-                if i > 2:
-                    yield scrapy.Request(url=real_detail_url, dont_filter=True, callback=self.detail_parse,
-                                         meta={'browser': self.browser})
-
-                    # page_urls = response.css('.pagination .num::attr(href)').extract()
-                    # for page_url in page_urls:
-                    #     real_url = parse.urljoin(response.url, page_url)
-                    #     yield scrapy.Request(real_url)
+            i += 1
+            if i == 3:
+                if re.match(detail_pattern, detail_url, flags=0):
+                    real_detail_url = parse.urljoin(response.url, detail_url)
+                    yield scrapy.Request(url=real_detail_url, dont_filter=True, callback=self.detail_parse)
 
     def detail_parse(self, response):
-        print('--detal_parse----')
-        brower = response.meta.get('browser')
-        brower.close()
+        brower = response.meta.get('browser_obj')
         # 详细链接列表
+        item_loader = ItemLoader(item=TtmeijuItem(), response=response)
+        res = self.yielditems(response, item_loader)
+
+        # 每季翻页
+        # elems = brower.find_element_by_css_selector(".seasonitem").find_elements_by_xpath('//h3')
+
+        ids = response.css('div.seasonitem h3::attr("id")').extract()
+        # 切片
+        click_id_list = ids[1:-1]
+
+        for id in click_id_list:
+            select_str = ".seasonitem h3[id='{0}']".format(id)
+            click_button = brower.find_element_by_css_selector(select_str)
+            click_button.click()
+            wait(brower, 150).until(lambda x: len(brower.find_elements_by_css_selector("#seedlist tr")) > 1)
+            res = self.yielditems(brower.page_source, res ,is_se = 0)
+
+        brower.close()
+
+        yield res.load_item()
+
+    def yielditems(self, response, item_loader, is_se=1):
+        if is_se == 0:
+            response = Selector(text=response)
+
         seed_lists = response.css('#seedlist tr')
         for seed_list in seed_lists:
             tmp_urls = {"baidu": "null", "bt": "null", "xunlei": "null", "xiaomi": "null", "ed2": "null"}
@@ -169,7 +166,8 @@ class TtmeijuSpider(scrapy.Spider):
                     additional_descs['kind'] = decribe
                 if re.match("\d{4}-\d{2}-\d+", decribe, flags=0):
                     additional_descs['release_time'] = decribe
-            item_loader = ItemLoader(item=TtmeijuItem(), response=response)
+
+            # return [additional_descs,tmp_urls,dd,tmp_urls.get('baidu'),tmp_urls.get('xunlei'),tmp_urls.get('xiaomi'),tmp_urls.get('ed2'),tmp_urls.get('bt'),additional_descs.get('kind'),additional_descs.get('size'),additional_descs.get('release_time'),additional_descs.get('subtitle'),chinese_title,english_title,season,episode,object_id]
             item_loader.add_value("describes", additional_descs)
             item_loader.add_value("urls", tmp_urls)
             item_loader.add_value("title", dd)
@@ -187,15 +185,5 @@ class TtmeijuSpider(scrapy.Spider):
             item_loader.add_value("season", season)
             item_loader.add_value("episode", episode)
             item_loader.add_value("object_id", object_id)
-
-            # 每季翻页
-            elems = self.browser.find_element_by_css_selector(".seasonitem").find_elements_by_xpath('//h3')
-
-            for elem in elems:
-                if elem.get_attribute('onclick'):
-                    # elem = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS, "seasonitem")))
-                    elem.click()
-                    print('clicked')
-                    # self.browser.page_source()
-
-            yield item_loader.load_item()
+            return item_loader
+            # yield item_loader.load_item()

@@ -68,42 +68,34 @@ from selenium import webdriver
 #             return HtmlResponse(url=spider.browser.current_url, body=spider.browser.page_source, encoding='utf-8',
 #                                 request=request)
 
+
 class MeijuMiddleware(object):
+    def get_browser(self):
+        chrome_options = webdriver.ChromeOptions()
+        prefs = {"profile.managed_default_content_settings.images": 2}
+        # path = '/Users/canvas/project/seleniumdivers/chromedriver'
+        path = "E:/selenium_driver/chromedriver.exe"
+        chrome_options.add_experimental_option("prefs", prefs)
+        browser = webdriver.Chrome(executable_path=path, chrome_options=chrome_options)
+        return browser
     def process_request(self, request, spider):
         request_url = request.url
         if spider.name == "ttmeiju":
-            # chrome_options = webdriver.ChromeOptions()
-            # prefs = {"profile.managed_default_content_settings.images": 2}
-            # # path = '/Users/canvas/project/seleniumdivers/chromedriver'
-            # path = "E:/selenium_driver/chromedriver.exe"
-            # chrome_options.add_experimental_option("prefs", prefs)
-            # browser = webdriver.Chrome(executable_path=path, chrome_options=chrome_options)
-            # print('请求')
-            # browser = request.meta['browser']
-            # browser.get(request.url)
-            # return HtmlResponse(url=browser.current_url, body=browser.page_source, encoding='utf-8',
-            #                     request=request)
-
-
-            chrome_options = webdriver.ChromeOptions()
-            prefs = {"profile.managed_default_content_settings.images": 2}
-            # path = '/Users/canvas/project/seleniumdivers/chromedriver'
-            path = "E:/selenium_driver/chromedriver.exe"
-            chrome_options.add_experimental_option("prefs", prefs)
-            browser = webdriver.Chrome(executable_path=path, chrome_options=chrome_options)
-
             if request_url == "http://www.ttmeiju.vip/index.php/user/login.html":
+                browser = self.get_browser()
                 browser.get(request_url)
                 spider.browser = browser
                 return HtmlResponse(url=browser.current_url, body=browser.page_source, encoding='utf-8',
                                     request=request)
             else:
-                cookies = spider.web_cookies
-                print(cookies[0])
-
-                browser.add_cookie(cookies[0])
-
+                browser = request.meta.get('browser_obj')
+                if browser is None:
+                    cookies = spider.web_cookies
+                    browser = self.get_browser()
+                    browser.get(request_url)
+                    for i in range(len(cookies)):
+                        browser.add_cookie(cookies[i])
                 browser.get(request_url)
-                spider.browser = browser
+                request.meta['browser_obj'] = browser
                 return HtmlResponse(url=browser.current_url, body=browser.page_source, encoding='utf-8',
                                     request=request)
