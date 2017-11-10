@@ -7,7 +7,7 @@ def sqParams():
     domain = 'http://101.132.69.89:8071/app_dev.php/api/fish/simplified/sq/login'
     now = int(time.time())
     params = {
-        "user_name": "pw1234",
+        "user_name": "canvas0607",
         "server_id": "1",
         "is_adult": "1",
         "pt_vip": "1",
@@ -17,8 +17,8 @@ def sqParams():
     string = ""
     for v in params:
         string += str(params.get(v))
-    key = 'yFTq1x^SdVjxBr&@^68mZ^0dcA8YwjpR'
-    key = '123456789'
+    key = 'd98Wzaf49QIu1sWgDT5CcmP1R7A7HfBM'
+
     string += key
     print(string)
     sign = utils.get_md5(string)
@@ -39,7 +39,29 @@ def sqCheckParams():
     for v in params:
         string += str(params.get(v))
     key = 'yFTq1x^SdVjxBr&@^68mZ^0dcA8YwjpR'
-    key = '123456789'
+    key = 'd98Wzaf49QIu1sWgDT5CcmP1R7A7HfBM'
+    string += key
+    print(string)
+    sign = utils.get_md5(string)
+    params['sign'] = sign
+
+    return domain, params
+
+
+def sqPhoneApiParams():
+    domain = 'http://101.132.69.89:8071/app_dev.php/api/fish/simplified/sq/phoneApi'
+    now = int(time.time())
+    params = {
+        "sid": "1",
+        "username": "canvas0607",
+        "time": now
+    }
+
+    string = ""
+    for v in params:
+        string += str(params.get(v))
+    key = 'yFTq1x^SdVjxBr&@^68mZ^0dcA8YwjpR'
+    key = 'd98Wzaf49QIu1sWgDT5CcmP1R7A7HfBM'
     string += key
     print(string)
     sign = utils.get_md5(string)
@@ -49,10 +71,10 @@ def sqCheckParams():
 
 
 def setParams():
-    domain = 'http://101.132.69.89:8071/app.php/api/fish/simplified/union/login'
+    domain = 'http://101.132.69.89:8071/app_dev.php/api/fish/simplified/union/login'
     now = int(time.time())
     params = {
-        'site': "douyu",
+        'site': "7K7K",
         "user_name": "pw123",
         "is_adult": "1",
         "client": "1",
@@ -65,7 +87,7 @@ def setParams():
     for i in range(len(sort_keys)):
         string += str(params[sort_keys[i]])
     key = 'yFTq1x^SdVjxBr&@^68mZ^0dcA8YwjpR'
-    key = '123456789'
+    key = 'YEfOfT1wxU83wqC6fcNU30LTHydRS3EV'
     string += key
     print(string)
     sign = utils.get_md5(string)
@@ -86,7 +108,7 @@ def payParams():
         "moneytype": "CNY",
         "time": now,
         "server_id": "1",
-        "site": "douyu"
+        "site": "7K7K"
     }
 
     sort_keys = sorted(params.keys())
@@ -107,8 +129,8 @@ def paySqParams():
     domain = 'http://101.132.69.89:8071/app_dev.php/api/fish/simplified/sq/pay'
     now = int(time.time())
     params = {
-        'order_id': ("DY"+str(now)),
-        "user_name": "pw1234",
+        'order_id': ("DYa"+str(now)),
+        "user_name": "canvas0607",
         "server_id": "1",
         "coin": "1000",
         "money": 100,
@@ -119,7 +141,7 @@ def paySqParams():
     for v in params:
         string += str(params.get(v))
 
-    key = '987654321'
+    key = 'tjyhEz7enK5mMzDhTtidyljSlNp5Bvq1'
     string += key
     print(string)
     sign = utils.get_md5(string)
@@ -131,7 +153,7 @@ def checkUserParams():
     domain = 'http://101.132.69.89:8071/app_dev.php/api/fish/simplified/union/checkUser'
     now = int(time.time())
     params = {
-        'site': "douyu",
+        'site': "7K7K",
         "user_name": "pw123",
         "time": now,
         "server_id": "1"
@@ -142,7 +164,7 @@ def checkUserParams():
     for i in range(len(sort_keys)):
         string += str(params[sort_keys[i]])
     key = 'yFTq1x^SdVjxBr&@^68mZ^0dcA8YwjpR'
-    key = '123456789'
+    key = 'YEfOfT1wxU83wqC6fcNU30LTHydRS3EV'
     string += key
     print(string)
     sign = utils.get_md5(string)
@@ -156,7 +178,7 @@ def request(domain, params):
 
 
 def main():
-    domain, params = checkUserParams()
+    domain, params = sqPhoneApiParams()
     request(domain, params)
 
 
